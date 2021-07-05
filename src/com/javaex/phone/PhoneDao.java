@@ -18,9 +18,9 @@ public class PhoneDao {
 	private String url = "jdbc:oracle:thin:@localhost:1521:xe";
 	private String id = "phonedb";
 	private String pw = "phonedb";
-
+	
+	// driver
 	private void getConnection() {
-		// driver
 		try {
 			Class.forName(driver);
 			// jdbc connecting
@@ -58,10 +58,9 @@ public class PhoneDao {
 			query += " values(seq_person_id.nextval, ?, ?, ?) ";
 
 			pstmt = conn.prepareStatement(query);
-			pstmt.setInt(1, personVo.getPersonId());
-			pstmt.setString(2, personVo.getName());
-			pstmt.setString(3, personVo.getHp());
-			pstmt.setString(4, personVo.getCompany());
+			pstmt.setString(1, personVo.getName());
+			pstmt.setString(2, personVo.getHp());
+			pstmt.setString(3, personVo.getCompany());
 
 			count = pstmt.executeUpdate();
 
@@ -80,7 +79,7 @@ public class PhoneDao {
 		this.getConnection();
 		try {
 			String query = "";
-			query += " update from person ";
+			query += " update person ";
 			query += " set    name = ?, ";
 			query += "        hp= ?, ";
 			query += "        company = ? ";
@@ -157,4 +156,38 @@ public class PhoneDao {
 		return personList;
 	}
 
+//search method
+	public List<PersonVo> SearchedList(String searchWord){
+		List<PersonVo> searchedList = new ArrayList<PersonVo>();
+		this.getConnection();
+		try {
+			String query = "";
+			query += " select person_id, ";
+			query += "        name, ";
+			query += " 		  hp, ";
+			query += "		  company ";
+			query += " from person ";
+			query += " where name like '%" + searchWord +"%' ";
+			query += "    or hp like '%" + searchWord +"%' ";
+			query += "    or company like '%" + searchWord +"%' ";
+
+			pstmt = conn.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			while(rs.next()) {
+				int personId = rs.getInt("personId");
+				String name = rs.getString("name");
+				String hp = rs.getString("hp");
+				String company = rs.getString("company");
+
+				PersonVo personVo = new PersonVo(personId, name, hp, company);
+
+				searchedList.add(personVo);
+			}
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		
+		this.close();
+		return searchedList;
+	}
 }
